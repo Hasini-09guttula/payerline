@@ -115,16 +115,6 @@ npm run dev
 
 ---
 
-## Demo script (about one minute)
-
-1. **Patient file** — Enter admission details (or leave placeholders and type a name). The first-page card and live check follow what you enter.
-2. **Meridian** — Leave the default packet (package “management”, no letterhead date, conflicting culture). Click **Review against memory**. Expect **Hold**, policy conflict, and fixes for package name, letterhead, and culture.
-3. **Northline** — Switch insurer, review the same surgery. Expect different reasons (labs / fitness), not Meridian’s letterhead rule.
-4. **Optional** — Try Harbour (consent / itemised estimate) or Sable (photo ID / policy card / CBC).
-5. **Learn** — Record a new outcome (approved / queried / denied) with the insurer’s reason, then review again. The new fact should influence the next advice for that bank only.
-
----
-
 ## API surface
 
 | Method | Path | Purpose |
