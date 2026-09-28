@@ -69,6 +69,8 @@ export interface ReviewResponse {
   bankId: string;
   decision: ReviewDecision;
   recalled: EvidenceItem[];
+  /** Recent stored outcomes for this procedure / matching package. */
+  outcomes: EvidenceItem[];
   reviewedAt: string;
 }
 

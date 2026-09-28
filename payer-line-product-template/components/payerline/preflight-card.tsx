@@ -8,22 +8,22 @@ import { usePatient } from './patient-context'
 type Step = { label: string; outcome: 'pass' | 'flag'; note?: string }
 
 const steps: Step[] = [
-  { label: 'Ultrasound report is attached', outcome: 'pass' },
+  { label: 'Clinical note and package name are on the form', outcome: 'pass' },
   { label: 'Written policy would accept this packet', outcome: 'pass' },
   {
-    label: 'Package name is “management”',
+    label: 'Package name does not match the procedure',
     outcome: 'flag',
-    note: 'Meridian denied this wording. The form must say laparoscopic cholecystectomy.',
+    note: 'Some insurers deny “management”. The package must match the procedure entered on the file.',
   },
   {
-    label: 'Scan date is only on the radiology printout',
+    label: 'Required papers differ by insurer bank',
     outcome: 'flag',
-    note: 'Meridian denied files where the ultrasound date was not on hospital letterhead.',
+    note: 'Meridian, Northline, Harbour, and Sable each keep separate memory. Open only one bank.',
   },
   {
-    label: 'Culture report conflicts with the diagnosis',
+    label: 'A conflicting report is still in the packet',
     outcome: 'flag',
-    note: 'Leave it out. Meridian queried a contradictory culture on 2 Mar 2026.',
+    note: 'Past outcomes may ask you to leave that document out before send.',
   },
 ]
 
@@ -85,10 +85,12 @@ export function PreflightCard() {
 
         <div className="flex items-start justify-between gap-4 px-5 pt-5">
           <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Patient · {patient.ward}</p>
-            <p className="mt-1 text-lg font-semibold">{`${patient.name || 'Unnamed patient'}, ${patient.age}${genderMark}`}</p>
-            <p className="text-sm text-muted-foreground">{patient.diagnosis}</p>
-            <p className="text-sm text-muted-foreground">{patient.procedure}</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Patient · {patient.ward || 'Admission'}
+            </p>
+            <p className="mt-1 text-lg font-semibold">{`${patient.name || 'Patient not entered'}, ${patient.age || '—'}${genderMark}`}</p>
+            <p className="text-sm text-muted-foreground">{patient.diagnosis || 'Diagnosis not entered'}</p>
+            <p className="text-sm text-muted-foreground">{patient.procedure || 'Procedure not entered'}</p>
           </div>
           <div className="relative size-16 shrink-0" role="img" aria-label={`Checks cleared ${score} of 100`}>
             <svg viewBox="0 0 64 64" className="size-16 -rotate-90">
@@ -170,7 +172,7 @@ export function PreflightCard() {
 
         <div className="flex items-center justify-between gap-3 px-5 py-4">
           <p className="text-xs text-muted-foreground">
-            {fixed ? 'Packet matches what Meridian has approved' : done ? 'Past outcomes would hold this file' : 'Recalling the Meridian bank…'}
+            {fixed ? 'Packet cleared against the open insurer bank' : done ? 'Past outcomes would hold this file' : 'Recalling the selected insurer bank…'}
           </p>
           <span
             className={cn(
@@ -185,9 +187,9 @@ export function PreflightCard() {
       </div>
 
       <div className="absolute -bottom-10 -left-12 hidden animate-float rounded-xl border bg-card px-4 py-3 shadow-lg xl:block">
-        <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Meridian bank</p>
-        <p className="font-serif text-2xl">12 Nov 2025</p>
-        <p className="text-xs text-muted-foreground">denied · date not on letterhead</p>
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Insurer bank</p>
+        <p className="font-serif text-2xl">Memory</p>
+        <p className="text-xs text-muted-foreground">one bank open at a time</p>
       </div>
     </div>
   )

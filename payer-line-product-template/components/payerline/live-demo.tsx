@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, CircleSlash, Loader2, ScanLine, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { payers } from './data'
@@ -22,10 +22,9 @@ type Review = {
     basedOn: Evidence[]
   }
   recalled: Evidence[]
+  outcomes?: Evidence[]
   bankId: string
 }
-
-const packages = ['management', 'laparoscopic cholecystectomy']
 
 export function LiveDemo() {
   const [payerId, setPayerId] = useState<PayerId>('meridian')
@@ -50,6 +49,26 @@ export function LiveDemo() {
   const [saved, setSaved] = useState('')
 
   const payer = payers.find((item) => item.id === payerId)!
+  const procedureName = patient.procedure.trim()
+  const packageOptions = useMemo(() => {
+    const options = ['management']
+    if (procedureName && procedureName.toLowerCase() !== 'management') options.push(procedureName)
+    return options
+  }, [procedureName])
+
+  const reset = () => {
+    setPhase('idle')
+    setReview(null)
+    setError('')
+    setSaved('')
+  }
+
+  useEffect(() => {
+    if (!packageOptions.includes(packageName)) {
+      setPackageName('management')
+      reset()
+    }
+  }, [packageOptions, packageName])
 
   const admission = {
     patientName: patient.name,
@@ -76,14 +95,12 @@ export function LiveDemo() {
     clinicalNote: `${patient.name}, ${patient.age}, ${patient.gender}, ${patient.procedure}, ${payer.name}. Package name: ${packageName}.`,
   }
 
-  const reset = () => {
-    setPhase('idle')
-    setReview(null)
-    setError('')
-    setSaved('')
-  }
-
   const run = async () => {
+    if (!patient.name.trim() || !patient.procedure.trim()) {
+      setPhase('error')
+      setError('Enter the patient name and procedure in the patient file before reviewing.')
+      return
+    }
     setPhase('scanning')
     setError('')
     setSaved('')
@@ -129,8 +146,19 @@ export function LiveDemo() {
     }
   }
 
-  const evidence = review ? (review.decision.basedOn.length > 0 ? review.decision.basedOn : review.recalled).slice(0, 4) : []
+  const evidence = review
+    ? (review.outcomes && review.outcomes.length > 0
+        ? review.outcomes
+        : review.decision.basedOn.length > 0
+          ? review.decision.basedOn
+          : review.recalled
+      ).slice(0, 6)
+    : []
   const holding = review?.decision.decision === 'hold'
+  const evidenceProcedure = patient.procedure.trim() || packageName
+  const packageAligned =
+    !!patient.procedure.trim() &&
+    packageName.trim().toLowerCase() === patient.procedure.trim().toLowerCase()
 
   return (
     <section id="demo" className="relative scroll-mt-16 overflow-hidden bg-ink py-24 text-ink-foreground md:py-32">
@@ -194,7 +222,7 @@ export function LiveDemo() {
                 }}
                 className="mt-3 w-full rounded-xl border border-ink-border bg-ink px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-success/60"
               >
-                {packages.map((name) => (
+                {packageOptions.map((name) => (
                   <option key={name} value={name}>
                     {name}
                   </option>
@@ -246,9 +274,9 @@ export function LiveDemo() {
           <div className="relative min-h-[520px] overflow-hidden rounded-2xl border border-ink-border bg-white/[0.03]" aria-live="polite">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-border px-6 py-4">
               <div>
-                <p className="text-sm font-medium">{patient.procedure}</p>
+                <p className="text-sm font-medium">{patient.procedure || 'Procedure not entered'}</p>
                 <p className="font-mono text-xs text-ink-muted">
-                  {patient.name} · {payer.name}
+                  {patient.name || 'Patient not entered'} · {payer.name}
                 </p>
               </div>
               {review && phase === 'done' ? (
@@ -290,11 +318,13 @@ export function LiveDemo() {
 
             {phase === 'done' && review && (
               <div className="px-6 py-6">
-                <div className={cn('flex items-start gap-3 rounded-xl px-4 py-3 text-sm', holding ? 'bg-destructive/15' : 'bg-success/15')}>
-                  {holding ? <CircleSlash className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" /> : <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />}
-                  <div>
-                    <p>{holding ? 'Do not send this file.' : 'Clear to send.'}</p>
-                    <p className="mt-1 text-ink-muted">{review.decision.summary}</p>
+                <div className={cn('rounded-xl px-4 py-3 text-sm', holding ? 'bg-destructive/15' : 'bg-success/15')}>
+                  <div className="flex items-start gap-3">
+                    {holding ? <CircleSlash className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" /> : <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />}
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <p className="font-medium">{holding ? 'Hold — do not send this file.' : 'Send — packet is clear.'}</p>
+                      <p className="text-ink-muted">{review.decision.summary}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -306,32 +336,66 @@ export function LiveDemo() {
 
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <div>
-                    <h3 className="font-mono text-xs uppercase tracking-widest text-ink-muted">Required before send</h3>
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-ink-muted">Missing required documents</h3>
+                    <p className="mt-1 text-xs text-ink-muted">Based on the fields you selected for this insurer.</p>
                     <ul className="mt-3 space-y-2">
-                      {review.decision.fixes.length === 0 ? <li className="text-sm text-ink-muted">No document change was required.</li> : review.decision.fixes.map((fix) => (
-                        <li key={fix} className="rounded-xl border border-ink-border px-3 py-2 text-sm">{fix}</li>
-                      ))}
+                      {review.decision.fixes.length === 0 ? (
+                        <li className="rounded-xl border border-success/30 px-3 py-2 text-sm text-success">None — required papers are present.</li>
+                      ) : (
+                        review.decision.fixes.map((fix) => (
+                          <li key={fix} className="rounded-xl border border-ink-border px-3 py-2 text-sm">
+                            {fix}
+                          </li>
+                        ))
+                      )}
                     </ul>
                   </div>
                   <div>
-                    <h3 className="font-mono text-xs uppercase tracking-widest text-ink-muted">Leave out</h3>
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-ink-muted">Do not keep in this packet</h3>
+                    <p className="mt-1 text-xs text-ink-muted">Attached papers that have caused queries or denials.</p>
                     <ul className="mt-3 space-y-2">
-                      {review.decision.doNotAdd.length === 0 ? <li className="text-sm text-ink-muted">Nothing in this packet was flagged as harmful.</li> : review.decision.doNotAdd.map((item) => (
-                        <li key={item} className="rounded-xl border border-destructive/30 px-3 py-2 text-sm">{item}</li>
-                      ))}
+                      {review.decision.doNotAdd.length === 0 ? (
+                        <li className="rounded-xl border border-success/30 px-3 py-2 text-sm text-success">None — nothing harmful is selected.</li>
+                      ) : (
+                        review.decision.doNotAdd.map((item) => (
+                          <li key={item} className="rounded-xl border border-destructive/30 px-3 py-2 text-sm">
+                            {item}
+                          </li>
+                        ))
+                      )}
                     </ul>
                   </div>
                 </div>
 
-                <h3 className="mt-6 font-mono text-xs uppercase tracking-widest text-ink-muted">Evidence from {review.bankId}</h3>
-                <ul className="mt-3 space-y-3">
-                  {evidence.map((item) => (
-                    <li key={item.id} className="rounded-xl border border-ink-border px-4 py-3">
-                      <p className="font-mono text-[11px] uppercase tracking-wider text-success">{item.type || 'memory'}{item.occurred ? ` · ${item.occurred.slice(0, 10)}` : ''}</p>
-                      <p className="mt-1 text-sm leading-relaxed text-ink-muted">{item.text}</p>
-                    </li>
-                  ))}
-                </ul>
+                <div className="mt-6">
+                  <h3 className="font-mono text-xs uppercase tracking-widest text-ink-muted">
+                    Evidence from {review.bankId}
+                  </h3>
+                  <p className="mt-1 text-xs text-ink-muted">
+                    Recent stored outcomes for{' '}
+                    <span className="text-ink-foreground">{evidenceProcedure || 'this procedure'}</span>
+                    {packageAligned
+                      ? ' · package matches procedure'
+                      : ' · set package to the same procedure name for a matched packet'}
+                  </p>
+                  <ul className="mt-3 space-y-3">
+                    {evidence.length === 0 ? (
+                      <li className="rounded-xl border border-ink-border px-4 py-3 text-sm text-ink-muted">
+                        No stored outcomes for this procedure were found in this bank yet.
+                      </li>
+                    ) : (
+                      evidence.map((item) => (
+                        <li key={item.id} className="rounded-xl border border-ink-border px-4 py-3">
+                          <p className="font-mono text-[11px] uppercase tracking-wider text-success">
+                            {item.type || 'outcome'}
+                            {item.occurred ? ` · ${item.occurred.slice(0, 10)}` : ''}
+                          </p>
+                          <p className="mt-1 text-sm leading-relaxed text-ink-muted">{item.text}</p>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
 
                 <form
                   className="mt-6 border-t border-ink-border pt-5"

@@ -32,8 +32,8 @@ app.post("/api/extract", async (req, res) => {
 app.post("/api/review", async (req, res) => {
   try {
     const admission = req.body as AdmissionCase;
-    if (!admission?.payerId || !admission.patientName || !admission.procedure) {
-      res.status(400).json({ error: "The case file is incomplete." });
+    if (!admission?.payerId || !admission.patientName?.trim() || !admission.procedure?.trim()) {
+      res.status(400).json({ error: "Enter the patient name and procedure before reviewing." });
       return;
     }
     const review = await reviewAdmission(admission);

@@ -1,13 +1,16 @@
 import type { AdmissionCase, OutcomeInput, ReviewDecision, ReviewResponse } from "@shared/types.ts";
+import { assessPacket } from "@shared/packet.ts";
 import { payerById } from "@shared/payers.ts";
-import { recallCase, reflectCase, retainOutcome } from "./hindsight.ts";
+import { recallCase, reflectCase, retainOutcome, loadRecentOutcomes, procedureTag } from "./hindsight.ts";
 
 export async function reviewAdmission(admission: AdmissionCase): Promise<ReviewResponse> {
   const payer = payerById(admission.payerId);
   const query = caseQuery(admission, payer.name);
-  const [recalled, reflection] = await Promise.all([
-    recallCase(admission.payerId, query),
-    reflectCase(admission.payerId, query),
+  const checklist = assessPacket(admission);
+  const [recalled, reflection, outcomes] = await Promise.all([
+    recallCase(admission.payerId, query, admission.procedure),
+    reflectCase(admission.payerId, query, admission.procedure),
+    loadRecentOutcomes(admission.payerId, admission.procedure, admission.packageName),
   ]);
 
   return {
@@ -15,7 +18,12 @@ export async function reviewAdmission(admission: AdmissionCase): Promise<ReviewR
     bankId: payer.bankId,
     reviewedAt: new Date().toISOString(),
     recalled,
-    decision: normalizeDecision(reflection.structured, reflection.narrative, reflection.basedOn),
+    outcomes,
+    decision: stabilizeDecision(
+      normalizeDecision(reflection.structured, reflection.narrative, reflection.basedOn),
+      checklist,
+      admission,
+    ),
   };
 }
 
@@ -40,7 +48,7 @@ export async function recordOutcome(input: OutcomeInput): Promise<{ documentId: 
     payerId: input.payerId,
     content,
     documentId,
-    tags: ["procedure:cholecystectomy", `outcome:${input.outcome}`, "source:live"],
+    tags: [procedureTag(admission.procedure), `outcome:${input.outcome}`, "source:live"],
   });
   return { documentId };
 }
@@ -51,6 +59,7 @@ function caseQuery(admission: AdmissionCase, payerName: string): string {
     `Patient: ${admission.patientName}, age ${admission.age}, gender ${admission.gender || "not stated"}, MRN ${admission.mrn}.`,
     `Diagnosis: ${admission.diagnosis}.`,
     `Procedure: ${admission.procedure}.`,
+    `The correct package name is the procedure name: "${admission.procedure}".`,
     `Package name on the form: "${admission.packageName}".`,
     `Ultrasound attached: ${yesNo(admission.ultrasoundAttached)}.`,
     `Ultrasound date printed on hospital letterhead: ${yesNo(admission.ultrasoundDateOnLetterhead)}.`,
@@ -66,11 +75,31 @@ function caseQuery(admission: AdmissionCase, payerName: string): string {
     "Decide whether the desk should hold or send this file.",
     "Use only this insurer's history.",
     "If the written policy would allow the file but past outcomes would not, hold it and set policy_conflict true.",
-    "fixes are concrete document changes.",
-    "do_not_add lists documents that previously caused a query or a denial.",
+    "fixes and do_not_add must be short document names only, for example: Package name, Ultrasound on letterhead, Matching culture report, Conflicting culture report, Fitness certificate, Surgical consent, Itemised estimate, Lump-sum estimate, Unsigned consent, Photo identity, Policy e-card, CBC.",
+    "Do not write long sentences in fixes or do_not_add.",
     "evidence lists the dated past outcomes you relied on.",
     "confidence is thin below two agreeing outcomes, moderate at two, and strong at three or more.",
   ].join("\n");
+}
+
+function stabilizeDecision(
+  decision: ReviewDecision,
+  checklist: ReturnType<typeof assessPacket>,
+  _admission: AdmissionCase,
+): ReviewDecision {
+  return {
+    ...decision,
+    decision: checklist.mustHold ? "hold" : "send",
+    policyConflict: checklist.policyConflict,
+    confidence: checklist.mustHold
+      ? decision.confidence === "thin"
+        ? "moderate"
+        : decision.confidence
+      : decision.confidence,
+    fixes: checklist.missingRequired,
+    doNotAdd: checklist.removeFromPacket,
+    summary: checklist.message,
+  };
 }
 
 function normalizeDecision(

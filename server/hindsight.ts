@@ -42,7 +42,7 @@ const DIRECTIVES = [
   {
     name: "Cite the file",
     content:
-      "Every fix and every piece of evidence must name the date and what the insurer actually did: approved, queried, or denied, and why.",
+      "Evidence must name the date and what the insurer actually did: approved, queried, or denied, and why. fixes and do_not_add must be short document names only, never long sentences.",
   },
   {
     name: "Disagreement",
@@ -146,12 +146,12 @@ export async function retainOutcome(input: {
   }
 }
 
-export async function recallCase(payerId: PayerId, query: string): Promise<EvidenceItem[]> {
+export async function recallCase(payerId: PayerId, query: string, procedure = ""): Promise<EvidenceItem[]> {
   const payer = payerById(payerId);
   const result = await hindsight().recall(payer.bankId, query, {
     budget: "mid",
     maxTokens: 1800,
-    tags: ["procedure:cholecystectomy"],
+    tags: [procedureTag(procedure)],
     tagsMatch: "any",
   });
   return result.results.map((item) => ({
@@ -163,7 +163,11 @@ export async function recallCase(payerId: PayerId, query: string): Promise<Evide
   }));
 }
 
-export async function reflectCase(payerId: PayerId, query: string): Promise<{
+export async function reflectCase(
+  payerId: PayerId,
+  query: string,
+  procedure = "",
+): Promise<{
   narrative: string;
   structured: Record<string, unknown> | null;
   basedOn: EvidenceItem[];
@@ -174,7 +178,7 @@ export async function reflectCase(payerId: PayerId, query: string): Promise<{
     budget: "mid",
     responseSchema: decisionSchema(),
     includeFacts: true,
-    tags: ["procedure:cholecystectomy"],
+    tags: [procedureTag(procedure)],
     tagsMatch: "any",
   });
   const memories = result.based_on?.memories ?? [];
@@ -197,7 +201,7 @@ export async function loadLedger(payerId: PayerId): Promise<LedgerEntry[]> {
   const api = hindsight();
   const [observations, recent] = await Promise.all([
     api.listMemories(payer.bankId, { type: "observation", limit: 8 }),
-    api.listMemories(payer.bankId, { limit: 14 }),
+    api.listMemories(payer.bankId, { limit: 20 }),
   ]);
   const seen = new Set<string>();
   const entries: LedgerEntry[] = [];
@@ -213,6 +217,70 @@ export async function loadLedger(payerId: PayerId): Promise<LedgerEntry[]> {
     });
   }
   return entries;
+}
+
+/** Recent approvals, queries, and denials for this procedure (package name should match it). */
+export async function loadRecentOutcomes(
+  payerId: PayerId,
+  procedure: string,
+  packageName = "",
+  limit = 6,
+): Promise<EvidenceItem[]> {
+  const entries = await loadLedger(payerId);
+  const procedureNeedle = procedure.trim().toLowerCase();
+  const packageNeedle = packageName.trim().toLowerCase();
+  const matched = entries
+    .filter((entry) => matchesProcedureOutcome(entry, procedureNeedle, packageNeedle))
+    .sort((a, b) => outcomeDate(b.occurred).localeCompare(outcomeDate(a.occurred)))
+    .slice(0, limit)
+    .map((entry) => ({
+      id: entry.id,
+      text: entry.text,
+      type: outcomeLabel(entry.text) || entry.type || "outcome",
+      occurred: entry.occurred,
+      context: entry.context,
+    }));
+  return matched;
+}
+
+export function procedureTag(procedure: string): string {
+  const slug = procedure
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  if (!slug || slug.includes("cholecystectomy")) return "procedure:cholecystectomy";
+  return `procedure:${slug}`;
+}
+
+function matchesProcedureOutcome(
+  entry: LedgerEntry,
+  procedureNeedle: string,
+  packageNeedle: string,
+): boolean {
+  const text = entry.text.toLowerCase();
+  if (/published cashless policy/.test(text)) return false;
+  if (!/(denied|denial|approved|approval|queried|query|outcome)/.test(text)) return false;
+  if (!procedureNeedle) return true;
+  if (text.includes(procedureNeedle)) return true;
+  // Package should match the procedure; still accept memories that name either form.
+  if (packageNeedle && packageNeedle === procedureNeedle && text.includes(packageNeedle)) return true;
+  if (procedureNeedle.includes("cholecystectomy") && text.includes("cholecystectomy")) return true;
+  return false;
+}
+
+function outcomeLabel(text: string): string | undefined {
+  const lower = text.toLowerCase();
+  if (/\bdenied\b|\bdenial\b/.test(lower)) return "denied";
+  if (/\bqueried\b|\bquery\b/.test(lower)) return "queried";
+  if (/\bapproved\b|\bapproval\b/.test(lower)) return "approved";
+  return undefined;
+}
+
+function outcomeDate(value?: string): string {
+  if (!value) return "";
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : value;
 }
 
 async function waitForOperation(bankId: string, operationId: string): Promise<void> {

@@ -11,14 +11,14 @@ export function Hero() {
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
             <span className="rounded-full bg-accent px-2 py-0.5 font-medium text-accent-foreground">St. Brigid</span>
-            Cashless desk · one surgery, four memory banks
+            Cashless desk · four insurer banks, one packet at a time
           </p>
           <h1 className="mt-6 text-balance font-serif text-5xl leading-[1.02] tracking-tight md:text-7xl">
             The policy says send. <em className="text-success">Memory</em> may say hold.
           </h1>
           <p className="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            PayerLine reviews a laparoscopic cholecystectomy file against one insurer at a time. Meridian and
-            Northline keep separate Hindsight banks, because the same packet needs opposite papers.
+            PayerLine reviews today&apos;s cashless file against one insurer at a time. Meridian, Northline, Harbour,
+            and Sable each keep a separate Hindsight bank, because the same surgery can need opposite papers.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a href="#demo" className={cn(buttonVariants({ size: 'lg' }), 'h-11 px-5 text-sm')}>
@@ -35,12 +35,12 @@ export function Hero() {
               <dd className="mt-1 font-serif text-3xl">4</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted-foreground">Procedure</dt>
-              <dd className="mt-1 font-serif text-3xl">1</dd>
+              <dt className="text-xs text-muted-foreground">Decision</dt>
+              <dd className="mt-1 font-serif text-3xl text-success">Hold / Send</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted-foreground">Decision</dt>
-              <dd className="mt-1 font-serif text-3xl text-success">Hold</dd>
+              <dt className="text-xs text-muted-foreground">Banks mix?</dt>
+              <dd className="mt-1 font-serif text-3xl">Never</dd>
             </div>
           </dl>
         </div>
