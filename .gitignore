@@ -1,4 +1,6 @@
 node_modules
+payer-line-product-template/node_modules
+payer-line-product-template/.next
 dist
 .env
 .env.local
