@@ -53,7 +53,7 @@ export async function extractAdmission(note: string): Promise<ExtractedFields> {
     {
       role: "system",
       content:
-        "You read cashless pre-authorisation notes for St. Brigid Memorial. Call extract_admission exactly once. Meridian Health Assurance is payerId meridian. Northline General Insurance is payerId northline. If a document is not mentioned, mark it absent. If the culture report conflicts with the diagnosis, set cultureContradictsDiagnosis true.",
+        "You read cashless pre-authorisation notes for St. Brigid Memorial. Call extract_admission exactly once. Meridian Health Assurance is payerId meridian. Northline General Insurance is payerId northline. If a document is not mentioned, mark it absent. Set cultureContradictsDiagnosis true when the culture report shows no growth, an unrelated finding, or any result that does not support the stated diagnosis.",
     },
     { role: "user", content: note },
   ];

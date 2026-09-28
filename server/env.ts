@@ -28,7 +28,7 @@ export function groqConfig(): { apiKey: string; model: string } {
   }
   return {
     apiKey,
-    model: process.env.GROQ_MODEL?.trim() || "qwen/qwen3-32b",
+    model: process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b",
   };
 }
 
