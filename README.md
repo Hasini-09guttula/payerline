@@ -1,26 +1,165 @@
 # PayerLine
 
-Cashless pre-authorisation desk for St. Brigid Memorial. Each insurer has its own Hindsight memory bank. A file is held or cleared from what that insurer actually did on past cases, not from the written policy alone.
+**Cashless pre-authorisation desk for St. Brigid Memorial Hospital.**
 
-## What memory does
+PayerLine helps the hospital desk decide whether to **hold** or **send** a cashless file *before* it goes to the insurer. The decision comes from what that insurer has actually done on past cases — not from the written policy alone.
 
-- **Retain** stores each past approval, query, and denial, plus the written policy, in that insurer’s bank.
-- **Recall** brings back the past cases that match today’s procedure and documents.
-- **Reflect** decides hold or send, with fixes, documents to leave out, and the evidence it used.
+Memory is the product. Each insurer has its own [Hindsight](https://hindsight.vectorize.io) bank. Banks never mix. The agent advises only. A person still sends the file. It does not diagnose, and it does not auto-submit.
 
-Meridian and Northline never share a bank. The same surgery can need opposite papers.
+---
 
-## Run
+## The problem
 
-1. Copy `.env.example` to `.env` and set `HINDSIGHT_API_KEY` and `GROQ_API_KEY`.
-2. `npm install`
-3. `npm run seed` — creates the two banks, directives, and the case history.
-4. `npm run dev` — API on port 8787, desk on port 5173.
+Written cashless policy often looks complete. Real denials and queries turn on details the policy never states:
 
-Groq reads the clinical note with a tool call. If the tool call is malformed, the server retries before it fails.
+- Meridian may deny a packet because the ultrasound date is only on the radiology printout, not on hospital letterhead, or because the package name says “management” instead of the real procedure.
+- Northline may ignore letterhead and accept “management,” then hold the same surgery for missing labs or a fitness note older than 14 days.
+- Harbour cares about a signed consent and an itemised estimate.
+- Sable cares about photo identity, the policy e-card, and a CBC.
 
-## Demo
+The senior billing head often carries that knowledge alone. When they are busy or off shift, the desk sends a “complete” file and learns the hard way.
 
-1. Leave the note as written and review it for Meridian. The policy says the packet is fine. Memory should hold it: letterhead date, package name, and the contradictory culture report.
-2. Switch the payer to Northline and review again. The hold reasons should change. Northline has asked for the laboratory panel and a recent fitness note.
-3. Log a new Meridian denial, then review a similar file. The next recommendation should include the new reason.
+---
+
+## What PayerLine does
+
+1. The desk enters today’s patient and builds the packet (package name, letterhead, culture, fitness, consent, estimate, identity papers, CBC).
+2. One insurer bank is opened. The others stay closed.
+3. **Recall** pulls similar past outcomes for that insurer and this surgery.
+4. **Reflect** returns **hold** or **send**, with:
+   - a short summary
+   - concrete fixes
+   - documents to leave out
+   - cited memories
+   - a flag when written policy and past outcomes disagree (outcomes govern)
+5. When the insurer replies, the desk can **retain** that outcome into the same bank so the next file learns from it.
+
+Default demo surgery: **laparoscopic cholecystectomy** for acute calculus cholecystitis.
+
+---
+
+## Insurer banks
+
+| Bank | Insurer | What memory actually cares about |
+|------|---------|----------------------------------|
+| `payerline-meridian` | Meridian Health Assurance | Letterhead date, exact package name, contradictory culture |
+| `payerline-northline` | Northline General Insurance | Labs / matching culture, fitness note ≤ 14 days |
+| `payerline-harbour` | Harbour Indemnity | Signed surgical consent, itemised estimate |
+| `payerline-sable` | Sable Mutual | Photo ID, policy e-card, CBC |
+
+Same procedure. Opposite documents. Separate memory.
+
+---
+
+## How Hindsight is used
+
+| Step | Role in PayerLine |
+|------|-------------------|
+| **Retain** | Stores written policy and dated approvals, queries, and denials in that insurer’s bank only |
+| **Recall** | Surfaces matching past cases for today’s packet |
+| **Reflect** | Decides hold / send with fixes, do-not-add, confidence, and citations |
+
+Groq can also parse a clinical note into structured admission fields (with tool-call retries). The live desk can set the packet with toggles and still review against memory.
+
+---
+
+## Stack
+
+- **API** — Node, Express, TypeScript (`server/`), port `8787`
+- **UI** — Next.js product page (`payer-line-product-template/`), port `5173`
+- **Memory** — Hindsight Cloud (`@vectorize-io/hindsight-client`)
+- **Note parsing** — Groq chat completions with function calling
+- **Shared case data** — `shared/` (payers, history, types)
+
+---
+
+## Setup
+
+### 1. Keys
+
+Copy `.env.example` to `.env` and set:
+
+```env
+HINDSIGHT_API_URL=https://api.hindsight.vectorize.io
+HINDSIGHT_API_KEY=your_hindsight_key
+GROQ_API_KEY=your_groq_key
+GROQ_MODEL=openai/gpt-oss-120b
+PORT=8787
+```
+
+Do not commit `.env`.
+
+### 2. Install
+
+```bash
+npm install
+npm install --prefix payer-line-product-template
+```
+
+### 3. Seed memory
+
+```bash
+npm run seed
+```
+
+This provisions the four banks, writes directives, and retains the seeded cholecystectomy history (policy + past outcomes). Safe to re-run; documents use stable IDs with replace.
+
+### 4. Run
+
+```bash
+npm run dev
+```
+
+- Desk UI: [http://localhost:5173](http://localhost:5173)
+- API health: [http://localhost:8787/api/health](http://localhost:8787/api/health)
+
+---
+
+## Demo script (about one minute)
+
+1. **Patient file** — Enter admission details (or leave placeholders and type a name). The first-page card and live check follow what you enter.
+2. **Meridian** — Leave the default packet (package “management”, no letterhead date, conflicting culture). Click **Review against memory**. Expect **Hold**, policy conflict, and fixes for package name, letterhead, and culture.
+3. **Northline** — Switch insurer, review the same surgery. Expect different reasons (labs / fitness), not Meridian’s letterhead rule.
+4. **Optional** — Try Harbour (consent / itemised estimate) or Sable (photo ID / policy card / CBC).
+5. **Learn** — Record a new outcome (approved / queried / denied) with the insurer’s reason, then review again. The new fact should influence the next advice for that bank only.
+
+---
+
+## API surface
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/health` | Credentials and payer list |
+| `POST` | `/api/extract` | Groq note → structured fields |
+| `POST` | `/api/review` | Recall + reflect for one payer |
+| `POST` | `/api/outcome` | Retain a live insurer reply |
+| `GET` | `/api/ledger?payer=` | Recent memories for that bank |
+
+The Next app proxies `/api/*` to the Express server.
+
+---
+
+## Project layout
+
+```text
+shared/                         # Payers, seeded history, shared types
+server/                         # Express API, Hindsight, Groq, review flow
+scripts/seed.ts                 # Provision banks + retain history
+payer-line-product-template/    # Next.js desk UI
+```
+
+---
+
+## What this is not
+
+- Not a diagnosis tool
+- Not an auto-submitter to insurer portals
+- Not one shared memory across all payers
+
+It is advice for the cashless desk: **hold or send**, grounded in insurer-specific outcomes.
+
+---
+
+## License
+
+Built for the Vectorize / Hindsight hackathon. Use and adapt for your own demo as needed.
