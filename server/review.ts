@@ -30,6 +30,8 @@ export async function recordOutcome(input: OutcomeInput): Promise<{ documentId: 
     `Ultrasound attached: ${yesNo(admission.ultrasoundAttached)}. Ultrasound date on hospital letterhead: ${yesNo(admission.ultrasoundDateOnLetterhead)}.`,
     `Culture report attached: ${yesNo(admission.cultureReportAttached)}. Culture contradicted the diagnosis: ${yesNo(admission.cultureContradictsDiagnosis)}.`,
     `Fitness certificate attached: ${yesNo(admission.fitnessCertificateAttached)}. Fitness certificate age in days: ${admission.fitnessCertificateAgeDays}.`,
+    `Signed surgical consent attached: ${yesNo(admission.consentAttached)}. Itemised estimate attached: ${yesNo(admission.itemisedEstimateAttached)}.`,
+    `Photo identity attached: ${yesNo(admission.photoIdAttached)}. Policy e-card attached: ${yesNo(admission.policyCardAttached)}. CBC attached: ${yesNo(admission.cbcAttached)}.`,
     `Desk reason: ${input.reason.trim()}`,
     `This outcome is evidence for the next ${payer.name} file of the same procedure.`,
   ].join("\n");
@@ -46,7 +48,7 @@ export async function recordOutcome(input: OutcomeInput): Promise<{ documentId: 
 function caseQuery(admission: AdmissionCase, payerName: string): string {
   return [
     `Today's cashless file at St. Brigid Memorial is for ${payerName}.`,
-    `Patient: ${admission.patientName}, age ${admission.age}, MRN ${admission.mrn}.`,
+    `Patient: ${admission.patientName}, age ${admission.age}, gender ${admission.gender || "not stated"}, MRN ${admission.mrn}.`,
     `Diagnosis: ${admission.diagnosis}.`,
     `Procedure: ${admission.procedure}.`,
     `Package name on the form: "${admission.packageName}".`,
@@ -56,6 +58,11 @@ function caseQuery(admission: AdmissionCase, payerName: string): string {
     `Culture report contradicts the diagnosis: ${yesNo(admission.cultureContradictsDiagnosis)}.`,
     `Physician fitness certificate attached: ${yesNo(admission.fitnessCertificateAttached)}.`,
     `Fitness certificate age in days: ${admission.fitnessCertificateAgeDays}.`,
+    `Signed surgical consent attached: ${yesNo(admission.consentAttached)}.`,
+    `Itemised estimate attached: ${yesNo(admission.itemisedEstimateAttached)}.`,
+    `Photo identity attached: ${yesNo(admission.photoIdAttached)}.`,
+    `Policy e-card attached: ${yesNo(admission.policyCardAttached)}.`,
+    `CBC report attached: ${yesNo(admission.cbcAttached)}.`,
     "Decide whether the desk should hold or send this file.",
     "Use only this insurer's history.",
     "If the written policy would allow the file but past outcomes would not, hold it and set policy_conflict true.",

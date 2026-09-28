@@ -164,6 +164,97 @@ The physician fitness-for-surgery note was 21 days old.
 Northline queried the file and asked for a fitness note dated within 14 days of admission.
 The query held the patient overnight.`,
   },
+  {
+    payerId: "harbour",
+    documentId: "harbour-policy",
+    timestamp: "2025-01-01T00:00:00Z",
+    context: "written cashless policy, Harbour Indemnity, laparoscopic cholecystectomy",
+    tags: [procedure, "source:policy"],
+    content: `Harbour Indemnity published cashless policy for laparoscopic cholecystectomy at St. Brigid Memorial.
+The written policy says clinical notes and an ultrasound are sufficient.
+The written policy says consent and the estimate follow the hospital's own file.
+The written policy does not mention a signed consent form, an itemised estimate, hospital letterhead, or the exact package name.`,
+  },
+  {
+    payerId: "harbour",
+    documentId: "harbour-2025-10-08",
+    timestamp: "2025-10-08T10:15:00Z",
+    context: "cashless denial, Harbour Indemnity, missing consent and lump-sum estimate",
+    tags: [procedure, "outcome:denied"],
+    content: `On 8 October 2025 Harbour Indemnity denied cashless approval for Mr. Arjun Sethi, laparoscopic cholecystectomy, diagnosis acute calculus cholecystitis.
+The ultrasound was on hospital letterhead and the package name was "laparoscopic cholecystectomy".
+The surgical consent form was not signed.
+The estimate was a single lump-sum figure, not itemised.
+Harbour denied the file for the unsigned consent and the lump-sum estimate.`,
+  },
+  {
+    payerId: "harbour",
+    documentId: "harbour-2026-01-19",
+    timestamp: "2026-01-19T08:40:00Z",
+    context: "cashless denial, Harbour Indemnity, consent and estimate again",
+    tags: [procedure, "outcome:denied"],
+    content: `On 19 January 2026 Harbour Indemnity denied Mrs. Leela Nair, laparoscopic cholecystectomy.
+The package name was "management". Letterhead was not used.
+The consent form was missing and the estimate was not itemised.
+Harbour denied the file for those two documents. Package wording was not cited.`,
+  },
+  {
+    payerId: "harbour",
+    documentId: "harbour-2026-03-18",
+    timestamp: "2026-03-18T11:05:00Z",
+    context: "cashless approval after consent and itemised estimate, Harbour Indemnity",
+    tags: [procedure, "outcome:approved"],
+    content: `On 18 March 2026 Harbour Indemnity approved Mr. Vivek Rao, laparoscopic cholecystectomy, on first submission.
+A signed surgical consent and an itemised estimate were attached.
+The package name was "management". The ultrasound date was not on hospital letterhead.
+Harbour approved the file.`,
+  },
+  {
+    payerId: "sable",
+    documentId: "sable-policy",
+    timestamp: "2025-01-01T00:00:00Z",
+    context: "written cashless policy, Sable Mutual, laparoscopic cholecystectomy",
+    tags: [procedure, "source:policy"],
+    content: `Sable Mutual published cashless policy for laparoscopic cholecystectomy at St. Brigid Memorial.
+The written policy says to submit the surgical package with clinical notes.
+The written policy says identity is checked by the hospital at admission.
+The written policy says investigations follow the hospital protocol.
+The written policy does not mention a photo identity, a policy e-card, or a CBC report.`,
+  },
+  {
+    payerId: "sable",
+    documentId: "sable-2025-12-11",
+    timestamp: "2025-12-11T09:30:00Z",
+    context: "cashless denial, Sable Mutual, missing identity papers",
+    tags: [procedure, "outcome:denied"],
+    content: `On 11 December 2025 Sable Mutual denied cashless approval for Ms. Farida Khan, laparoscopic cholecystectomy, diagnosis acute calculus cholecystitis.
+No photo identity and no policy e-card were in the packet.
+CBC and the culture report were attached and matched the diagnosis.
+The package name was "laparoscopic cholecystectomy".
+Sable denied the file because photo identity and the policy card were missing.`,
+  },
+  {
+    payerId: "sable",
+    documentId: "sable-2026-02-04",
+    timestamp: "2026-02-04T15:10:00Z",
+    context: "cashless query, Sable Mutual, missing CBC",
+    tags: [procedure, "outcome:queried"],
+    content: `On 4 February 2026 Sable Mutual queried Mr. Nikhil Bose, laparoscopic cholecystectomy.
+Photo identity and the policy e-card were attached.
+The CBC report was missing. A culture report was present.
+Sable queried the file and asked for the CBC before it would clear the admission.`,
+  },
+  {
+    payerId: "sable",
+    documentId: "sable-2026-04-16",
+    timestamp: "2026-04-16T13:25:00Z",
+    context: "cashless approval with identity papers and CBC, Sable Mutual",
+    tags: [procedure, "outcome:approved"],
+    content: `On 16 April 2026 Sable Mutual approved Mrs. Anjali Menon, laparoscopic cholecystectomy, on first submission.
+Photo identity, the policy e-card, and a CBC report were attached.
+The package name was "management". The ultrasound date was not on hospital letterhead.
+Sable approved the file.`,
+  },
 ];
 
 export const DEFAULT_NOTE = `St. Brigid Memorial Hospital

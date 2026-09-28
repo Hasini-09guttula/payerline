@@ -35,7 +35,7 @@ function LiveClock() {
 }
 
 const links = [
-  { href: '#moment', label: 'The moment' },
+  { href: '#patient', label: 'Patient' },
   { href: '#demo', label: 'Live check' },
   { href: '#how', label: 'How it works' },
   { href: '#knowledge', label: 'Knowledge' },

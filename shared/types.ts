@@ -1,4 +1,4 @@
-export type PayerId = "meridian" | "northline";
+export type PayerId = "meridian" | "northline" | "harbour" | "sable";
 
 export type OutcomeKind = "approved" | "queried" | "denied";
 
@@ -17,6 +17,7 @@ export interface Payer {
 export interface AdmissionCase {
   patientName: string;
   age: number;
+  gender: string;
   mrn: string;
   ward: string;
   scheduledAt: string;
@@ -30,6 +31,11 @@ export interface AdmissionCase {
   cultureContradictsDiagnosis: boolean;
   fitnessCertificateAttached: boolean;
   fitnessCertificateAgeDays: number;
+  consentAttached: boolean;
+  itemisedEstimateAttached: boolean;
+  photoIdAttached: boolean;
+  policyCardAttached: boolean;
+  cbcAttached: boolean;
   clinicalNote: string;
 }
 

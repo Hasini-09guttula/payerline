@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 const metrics = [
-  { value: 2, suffix: '', prefix: '', label: 'insurer banks, never mixed' },
-  { value: 13, suffix: '', prefix: '', label: 'seeded outcomes for this surgery' },
+  { value: 4, suffix: '', prefix: '', label: 'insurer banks, never mixed' },
+  { value: 21, suffix: '', prefix: '', label: 'seeded outcomes for this surgery' },
   { value: 1, suffix: '', prefix: '', label: 'procedure: laparoscopic cholecystectomy' },
   { value: 14, suffix: 'd', prefix: '', label: 'Northline fitness-note limit' },
 ]

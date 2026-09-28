@@ -77,10 +77,15 @@ function bankMission(payerName: string): string {
 export async function provisionBanks(): Promise<void> {
   const api = hindsight();
   for (const payer of PAYERS) {
-    await api.createBank(payer.bankId, {
-      name: payer.name,
-      reflectMission: bankMission(payer.name),
-    });
+    try {
+      await api.createBank(payer.bankId, {
+        name: payer.name,
+        reflectMission: bankMission(payer.name),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!/already exists|409|conflict/i.test(message)) throw error;
+    }
     await api.updateBankConfig(payer.bankId, {
       reflectMission: bankMission(payer.name),
       retainMission:

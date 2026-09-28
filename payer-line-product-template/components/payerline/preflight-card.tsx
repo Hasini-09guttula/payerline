@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, Check, FileText, Loader2, Send, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { usePatient } from './patient-context'
 
 type Step = { label: string; outcome: 'pass' | 'flag'; note?: string }
 
@@ -36,6 +37,8 @@ function formatCountdown(total: number) {
 }
 
 export function PreflightCard() {
+  const { patient } = usePatient()
+  const genderMark = patient.gender === 'Female' ? 'F' : patient.gender === 'Male' ? 'M' : ''
   const [active, setActive] = useState(0)
   const [seconds, setSeconds] = useState(START_SECONDS)
   useEffect(() => {
@@ -67,7 +70,7 @@ export function PreflightCard() {
         <div className="flex items-center justify-between border-b bg-secondary/60 px-5 py-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <FileText className="size-3.5" aria-hidden="true" />
-            <span className="font-mono">CASHLESS · SB-44821</span>
+            <span className="font-mono">CASHLESS · {patient.mrn || '—'}</span>
           </div>
           <div className="flex items-center gap-2 rounded-full bg-warning/15 px-2.5 py-1 font-mono text-xs text-warning-foreground">
             <span className="size-1.5 animate-pulse rounded-full bg-warning" aria-hidden="true" />
@@ -78,9 +81,10 @@ export function PreflightCard() {
 
         <div className="flex items-start justify-between gap-4 px-5 pt-5">
           <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Patient · Surgical admission</p>
-            <p className="mt-1 text-lg font-semibold">Ananya Rao, 46F</p>
-            <p className="text-sm text-muted-foreground">Laparoscopic cholecystectomy · Meridian</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Patient · {patient.ward}</p>
+            <p className="mt-1 text-lg font-semibold">{`${patient.name || 'Unnamed patient'}, ${patient.age}${genderMark}`}</p>
+            <p className="text-sm text-muted-foreground">{patient.diagnosis}</p>
+            <p className="text-sm text-muted-foreground">{patient.procedure}</p>
           </div>
           <div className="relative size-16 shrink-0" role="img" aria-label={`Checks cleared ${score} of 100`}>
             <svg viewBox="0 0 64 64" className="size-16 -rotate-90">

@@ -27,6 +27,32 @@ export const PAYERS: Payer[] = [
       "Pre-operative investigations follow the hospital’s own protocol.",
     ],
   },
+  {
+    id: "harbour",
+    bankId: "payerline-harbour",
+    name: "Harbour Indemnity",
+    shortName: "Harbour",
+    deskCode: "HBI-22",
+    posture: "The written policy stops at clinical notes. Past denials turn on an unsigned consent and a lump-sum estimate.",
+    writtenPolicy: [
+      "Clinical notes and an ultrasound are sufficient for laparoscopic cholecystectomy.",
+      "Consent and the estimate follow the hospital's own file.",
+      "Package wording is not specified.",
+    ],
+  },
+  {
+    id: "sable",
+    bankId: "payerline-sable",
+    name: "Sable Mutual",
+    shortName: "Sable",
+    deskCode: "SMU-09",
+    posture: "The written policy treats identity as the hospital's job. Clearance actually needs a photo, the policy card, and a CBC.",
+    writtenPolicy: [
+      "Submit the surgical package with clinical notes.",
+      "Identity is checked by the hospital at admission.",
+      "Investigations follow the hospital protocol.",
+    ],
+  },
 ];
 
 export function payerById(id: PayerId): Payer {

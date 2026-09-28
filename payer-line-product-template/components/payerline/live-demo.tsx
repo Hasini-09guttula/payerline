@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { Check, CircleSlash, Loader2, ScanLine, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { patient, payers } from './data'
+import { payers } from './data'
+import { usePatient } from './patient-context'
 
-type PayerId = 'meridian' | 'northline'
+type PayerId = (typeof payers)[number]['id']
 type Phase = 'idle' | 'scanning' | 'done' | 'error'
 
 type Evidence = { id: string; text: string; type?: string; occurred?: string }
@@ -34,6 +35,12 @@ export function LiveDemo() {
   const [cultureConflicts, setCultureConflicts] = useState(true)
   const [fitnessAttached, setFitnessAttached] = useState(false)
   const [fitnessAge, setFitnessAge] = useState(21)
+  const [consentAttached, setConsentAttached] = useState(false)
+  const [itemisedEstimate, setItemisedEstimate] = useState(false)
+  const [photoIdAttached, setPhotoIdAttached] = useState(false)
+  const [policyCardAttached, setPolicyCardAttached] = useState(false)
+  const [cbcAttached, setCbcAttached] = useState(false)
+  const { patient } = usePatient()
   const [phase, setPhase] = useState<Phase>('idle')
   const [review, setReview] = useState<Review | null>(null)
   const [error, setError] = useState('')
@@ -43,6 +50,31 @@ export function LiveDemo() {
   const [saved, setSaved] = useState('')
 
   const payer = payers.find((item) => item.id === payerId)!
+
+  const admission = {
+    patientName: patient.name,
+    age: patient.age,
+    gender: patient.gender,
+    mrn: patient.mrn,
+    ward: patient.ward,
+    scheduledAt: patient.scheduledAt,
+    diagnosis: patient.diagnosis,
+    procedure: patient.procedure,
+    payerId,
+    packageName,
+    ultrasoundAttached: true,
+    ultrasoundDateOnLetterhead: letterhead,
+    cultureReportAttached: cultureAttached,
+    cultureContradictsDiagnosis: cultureAttached && cultureConflicts,
+    fitnessCertificateAttached: fitnessAttached,
+    fitnessCertificateAgeDays: fitnessAttached ? fitnessAge : 0,
+    consentAttached,
+    itemisedEstimateAttached: itemisedEstimate,
+    photoIdAttached,
+    policyCardAttached,
+    cbcAttached,
+    clinicalNote: `${patient.name}, ${patient.age}, ${patient.gender}, ${patient.procedure}, ${payer.name}. Package name: ${packageName}.`,
+  }
 
   const reset = () => {
     setPhase('idle')
@@ -59,24 +91,7 @@ export function LiveDemo() {
       const response = await fetch('/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patientName: patient.name,
-          age: patient.age,
-          mrn: patient.mrn,
-          ward: patient.ward,
-          scheduledAt: patient.scheduledAt,
-          diagnosis: patient.diagnosis,
-          procedure: patient.procedure,
-          payerId,
-          packageName,
-          ultrasoundAttached: true,
-          ultrasoundDateOnLetterhead: letterhead,
-          cultureReportAttached: cultureAttached,
-          cultureContradictsDiagnosis: cultureAttached && cultureConflicts,
-          fitnessCertificateAttached: fitnessAttached,
-          fitnessCertificateAgeDays: fitnessAttached ? fitnessAge : 0,
-          clinicalNote: `${patient.name}, ${patient.procedure}, ${payer.name}. Package name: ${packageName}.`,
-        }),
+        body: JSON.stringify(admission),
       })
       const body = await response.json()
       if (!response.ok) throw new Error(body.error || 'The desk could not review this file.')
@@ -100,24 +115,7 @@ export function LiveDemo() {
           payerId,
           outcome,
           reason,
-          caseSnapshot: {
-            patientName: patient.name,
-            age: patient.age,
-            mrn: patient.mrn,
-            ward: patient.ward,
-            scheduledAt: patient.scheduledAt,
-            diagnosis: patient.diagnosis,
-            procedure: patient.procedure,
-            payerId,
-            packageName,
-            ultrasoundAttached: true,
-            ultrasoundDateOnLetterhead: letterhead,
-            cultureReportAttached: cultureAttached,
-            cultureContradictsDiagnosis: cultureAttached && cultureConflicts,
-            fitnessCertificateAttached: fitnessAttached,
-            fitnessCertificateAgeDays: fitnessAttached ? fitnessAge : 0,
-            clinicalNote: reason,
-          },
+          caseSnapshot: { ...admission, clinicalNote: reason },
         }),
       })
       const body = await response.json()
@@ -141,10 +139,10 @@ export function LiveDemo() {
         <div className="max-w-3xl">
           <p className="font-mono text-xs uppercase tracking-widest text-success">Try it · live memory check</p>
           <h2 className="mt-4 text-balance font-serif text-4xl leading-tight md:text-6xl">
-            Same surgery. Two insurers. Only one bank is opened.
+            Same surgery. Only one bank is opened.
           </h2>
           <p className="mt-5 max-w-2xl text-pretty text-lg text-ink-muted">
-            {patient.name} is booked for a laparoscopic cholecystectomy at St. Brigid Memorial. The check uses that
+            {patient.name || 'The patient'} is booked for {patient.procedure || 'this procedure'} at St. Brigid Memorial. The check uses that
             insurer&apos;s Hindsight bank, not the written policy.
           </p>
         </div>
@@ -211,6 +209,11 @@ export function LiveDemo() {
                 <Toggle label="Culture report is attached" checked={cultureAttached} onChange={(value) => { setCultureAttached(value); reset() }} />
                 <Toggle label="Culture report conflicts with the diagnosis" checked={cultureConflicts} onChange={(value) => { setCultureConflicts(value); reset() }} />
                 <Toggle label="Physician fitness certificate is attached" checked={fitnessAttached} onChange={(value) => { setFitnessAttached(value); reset() }} />
+                <Toggle label="Signed surgical consent is attached" checked={consentAttached} onChange={(value) => { setConsentAttached(value); reset() }} />
+                <Toggle label="Estimate is itemised" checked={itemisedEstimate} onChange={(value) => { setItemisedEstimate(value); reset() }} />
+                <Toggle label="Photo identity is attached" checked={photoIdAttached} onChange={(value) => { setPhotoIdAttached(value); reset() }} />
+                <Toggle label="Policy e-card is attached" checked={policyCardAttached} onChange={(value) => { setPolicyCardAttached(value); reset() }} />
+                <Toggle label="CBC report is attached" checked={cbcAttached} onChange={(value) => { setCbcAttached(value); reset() }} />
               </div>
               {fitnessAttached ? (
                 <label className="mt-3 flex items-center justify-between text-sm text-ink-muted">

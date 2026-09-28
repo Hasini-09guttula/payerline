@@ -11,7 +11,7 @@ const TOOL = {
       properties: {
         diagnosis: { type: "string" },
         procedure: { type: "string" },
-        payerId: { type: "string", enum: ["meridian", "northline"] },
+        payerId: { type: "string", enum: ["meridian", "northline", "harbour", "sable"] },
         packageName: { type: "string" },
         ultrasoundAttached: { type: "boolean" },
         ultrasoundDateOnLetterhead: { type: "boolean" },
@@ -53,7 +53,7 @@ export async function extractAdmission(note: string): Promise<ExtractedFields> {
     {
       role: "system",
       content:
-        "You read cashless pre-authorisation notes for St. Brigid Memorial. Call extract_admission exactly once. Meridian Health Assurance is payerId meridian. Northline General Insurance is payerId northline. If a document is not mentioned, mark it absent. Set cultureContradictsDiagnosis true when the culture report shows no growth, an unrelated finding, or any result that does not support the stated diagnosis.",
+        "You read cashless pre-authorisation notes for St. Brigid Memorial. Call extract_admission exactly once. Meridian Health Assurance is payerId meridian. Northline General Insurance is payerId northline. Harbour Indemnity is payerId harbour. Sable Mutual is payerId sable. If a document is not mentioned, mark it absent. Set cultureContradictsDiagnosis true when the culture report shows no growth, an unrelated finding, or any result that does not support the stated diagnosis.",
     },
     { role: "user", content: note },
   ];
@@ -119,7 +119,8 @@ export async function extractAdmission(note: string): Promise<ExtractedFields> {
 }
 
 function normalizeExtract(parsed: Partial<ExtractedFields>): ExtractedFields {
-  const payerId: PayerId = parsed.payerId === "northline" ? "northline" : "meridian";
+  const known: PayerId[] = ["meridian", "northline", "harbour", "sable"];
+  const payerId: PayerId = known.includes(parsed.payerId as PayerId) ? (parsed.payerId as PayerId) : "meridian";
   return {
     diagnosis: text(parsed.diagnosis, "Acute calculus cholecystitis"),
     procedure: text(parsed.procedure, "Laparoscopic cholecystectomy"),

@@ -1,4 +1,4 @@
-import { ArrowRight, PlayCircle } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { PreflightCard } from './preflight-card'
@@ -11,7 +11,7 @@ export function Hero() {
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
             <span className="rounded-full bg-accent px-2 py-0.5 font-medium text-accent-foreground">St. Brigid</span>
-            Cashless desk · one surgery, two memory banks
+            Cashless desk · one surgery, four memory banks
           </p>
           <h1 className="mt-6 text-balance font-serif text-5xl leading-[1.02] tracking-tight md:text-7xl">
             The policy says send. <em className="text-success">Memory</em> may say hold.
@@ -25,15 +25,14 @@ export function Hero() {
               Review a live file
               <ArrowRight data-icon="inline-end" aria-hidden="true" />
             </a>
-            <a href="#moment" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-11 px-5 text-sm')}>
-              <PlayCircle data-icon="inline-start" aria-hidden="true" />
-              See the morning of surgery
+            <a href="#patient" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-11 px-5 text-sm')}>
+              Enter the patient
             </a>
           </div>
           <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t pt-6">
             <div>
               <dt className="text-xs text-muted-foreground">Insurer banks</dt>
-              <dd className="mt-1 font-serif text-3xl">2</dd>
+              <dd className="mt-1 font-serif text-3xl">4</dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">Procedure</dt>

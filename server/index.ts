@@ -60,8 +60,9 @@ app.post("/api/outcome", async (req, res) => {
 
 app.get("/api/ledger", async (req, res) => {
   try {
-    const payerId = req.query.payer === "northline" ? "northline" : "meridian";
-    const payer = PAYERS.find((item) => item.id === payerId)!;
+    const requested = typeof req.query.payer === "string" ? req.query.payer : "meridian";
+    const payer = PAYERS.find((item) => item.id === requested) ?? PAYERS[0];
+    const payerId = payer.id;
     const entries = await loadLedger(payerId);
     res.json({ payer, bankId: payer.bankId, entries });
   } catch (error) {
