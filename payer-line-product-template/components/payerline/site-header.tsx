@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Logo } from './logo'
 
 function LiveClock() {
-  const [time, setTime] = useState<string | null>(null)
+  const [time, setTime] = useState('--:--:--')
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const format = () =>
@@ -17,6 +19,7 @@ function LiveClock() {
         timeZone: 'Asia/Kolkata',
       })
     setTime(format())
+    setReady(true)
     const id = setInterval(() => setTime(format()), 1000)
     return () => clearInterval(id)
   }, [])
@@ -28,7 +31,9 @@ function LiveClock() {
         <span className="relative inline-flex size-2 rounded-full bg-success" />
       </span>
       <span>Live</span>
-      <span className="tabular-nums text-foreground">{time ?? '--:--:--'}</span>
+      <span className="tabular-nums text-foreground" suppressHydrationWarning>
+        {ready ? time : '--:--:--'}
+      </span>
       <span>IST</span>
     </span>
   )
@@ -61,9 +66,9 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-3">
           <LiveClock />
-          <Button render={<a href="#demo" />} nativeButton={false} size="sm">
+          <a href="#demo" className={cn(buttonVariants({ size: 'sm' }))}>
             Review a file
-          </Button>
+          </a>
         </div>
       </div>
     </header>

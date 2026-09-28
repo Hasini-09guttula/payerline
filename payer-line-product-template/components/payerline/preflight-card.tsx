@@ -41,22 +41,26 @@ export function PreflightCard() {
   const genderMark = patient.gender === 'Female' ? 'F' : patient.gender === 'Male' ? 'M' : ''
   const [active, setActive] = useState(0)
   const [seconds, setSeconds] = useState(START_SECONDS)
+  const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
+    setMounted(true)
     const id = setInterval(() => {
       setActive((current) => (current >= steps.length + 6 ? 0 : current + 1))
     }, STEP_MS)
     return () => clearInterval(id)
   }, [])
 
-  const fixed = active >= steps.length + 2
+  const fixed = mounted && active >= steps.length + 2
 
   useEffect(() => {
+    if (!mounted) return
     const id = setInterval(() => setSeconds((s) => (s > 0 ? s - 1 : START_SECONDS)), 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [mounted])
 
-  const done = active >= steps.length
-  const checked = Math.min(active, steps.length)
+  const done = mounted && active >= steps.length
+  const checked = mounted ? Math.min(active, steps.length) : 0
   const score = fixed ? 96 : done ? 71 : Math.round((checked / steps.length) * 68)
   const circumference = 2 * Math.PI * 26
 

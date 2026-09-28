@@ -1,7 +1,15 @@
+'use client'
+
 import { ArrowRight } from 'lucide-react'
 import { Logo } from './logo'
+import { usePatient } from './patient-context'
 
 export function CtaFooter() {
+  const { patient } = usePatient()
+  const reviewLabel = patient.name.trim()
+    ? `Review ${patient.name.trim()}'s file`
+    : 'Review this file'
+
   return (
     <footer id="pilot" className="scroll-mt-16 bg-ink text-ink-foreground">
       <div className="relative mx-auto max-w-7xl overflow-hidden px-4 pb-12 pt-24 md:px-8 md:pt-32">
@@ -19,7 +27,7 @@ export function CtaFooter() {
             href="#demo"
             className="mx-auto mt-10 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-success px-5 text-sm font-medium text-success-foreground transition-all hover:brightness-110"
           >
-            Review Mrs. Rao’s file
+            {reviewLabel}
             <ArrowRight className="size-4" aria-hidden="true" />
           </a>
         </div>
@@ -27,7 +35,7 @@ export function CtaFooter() {
         <div className="relative mt-24 flex flex-col items-start justify-between gap-6 border-t border-ink-border pt-8 text-sm text-ink-muted md:flex-row md:items-center">
           <Logo inverted />
           <p>Advice only. The cashless desk still sends the file.</p>
-          <p className="font-mono text-xs">© {new Date().getFullYear()} PayerLine</p>
+          <p className="font-mono text-xs">© 2026 PayerLine</p>
         </div>
       </div>
     </footer>
