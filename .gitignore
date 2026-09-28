@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+project-guidelines.pdf
+pdf-pages
+pdf-text-dump.txt
+extract-pdf.js
+render-pdf.ps1
+agent-tools
+data/session.json
