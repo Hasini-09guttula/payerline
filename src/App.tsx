@@ -423,7 +423,7 @@ export function App() {
             ) : (
               <motion.div key="empty" className="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <p className="eyebrow">Awaiting review</p>
-                <h2>The file has not been put to {payer.shortName}’s memory.</h2>
+                <h2>The file has not been put to {payer.shortName} memory.</h2>
                 <p>
                   The written policy is on the left of this docket once a review runs. Until then, the desk will not guess.
                 </p>
