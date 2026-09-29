@@ -20,8 +20,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@shared/*": ["../shared/*"],
-      "@server/*": ["../server/*"]
+      "@shared/*": ["./desk/shared/*"],
+      "@server/*": ["./desk/server/*"]
     }
   },
   "include": [
@@ -30,8 +30,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "../shared/**/*.ts",
-    "../server/**/*.ts"
+    "desk/shared/**/*.ts",
+    "desk/server/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

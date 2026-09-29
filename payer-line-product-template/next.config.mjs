@@ -1,7 +1,8 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
+const appDir = path.dirname(fileURLToPath(import.meta.url))
+const deskDir = path.join(appDir, 'desk')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -12,21 +13,18 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Allow importing desk API + shared case data from the monorepo root.
-  outputFileTracingRoot: rootDir,
   serverExternalPackages: ['@vectorize-io/hindsight-client'],
   turbopack: {
-    root: rootDir,
     resolveAlias: {
-      '@shared': path.join(rootDir, 'shared'),
-      '@server': path.join(rootDir, 'server'),
+      '@shared': path.join(deskDir, 'shared'),
+      '@server': path.join(deskDir, 'server'),
     },
   },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@shared': path.join(rootDir, 'shared'),
-      '@server': path.join(rootDir, 'server'),
+      '@shared': path.join(deskDir, 'shared'),
+      '@server': path.join(deskDir, 'server'),
     }
     return config
   },

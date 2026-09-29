@@ -14,3 +14,5 @@ extract-pdf.js
 render-pdf.ps1
 agent-tools
 data/session.json
+.vercel
+.env*
