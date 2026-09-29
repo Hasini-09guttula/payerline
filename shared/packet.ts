@@ -1,4 +1,4 @@
-import type { AdmissionCase, PayerId } from "./types.ts";
+import type { AdmissionCase, PayerId } from "./types";
 
 export interface PacketAssessment {
   /** Documents missing or wrong in today's selected packet. */

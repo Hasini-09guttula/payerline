@@ -1,8 +1,8 @@
 import { HindsightClient, HindsightError } from "@vectorize-io/hindsight-client";
-import type { EvidenceItem, LedgerEntry, PayerId } from "@shared/types.ts";
-import { HISTORY } from "@shared/history.ts";
-import { payerById, PAYERS } from "@shared/payers.ts";
-import { hindsightConfig } from "./env.ts";
+import type { EvidenceItem, LedgerEntry, PayerId } from "@shared/types";
+import { HISTORY } from "@shared/history";
+import { payerById, PAYERS } from "@shared/payers";
+import { hindsightConfig } from "./env";
 
 const DECISION_SCHEMA = {
   type: "object",

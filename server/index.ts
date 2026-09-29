@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
-import { PAYERS } from "@shared/payers.ts";
-import type { AdmissionCase, OutcomeInput } from "@shared/types.ts";
-import { credentialStatus, MissingConfigError } from "./env.ts";
-import { explainHindsightError, loadLedger } from "./hindsight.ts";
-import { extractAdmission } from "./groq.ts";
-import { recordOutcome, reviewAdmission } from "./review.ts";
+import { PAYERS } from "@shared/payers";
+import type { AdmissionCase, OutcomeInput } from "@shared/types";
+import { credentialStatus, MissingConfigError } from "./env";
+import { explainHindsightError, loadLedger } from "./hindsight";
+import { extractAdmission } from "./groq";
+import { recordOutcome, reviewAdmission } from "./review";
 
 const app = express();
 app.use(cors());

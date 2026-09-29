@@ -1,7 +1,7 @@
-import type { AdmissionCase, OutcomeInput, ReviewDecision, ReviewResponse } from "@shared/types.ts";
-import { assessPacket } from "@shared/packet.ts";
-import { payerById } from "@shared/payers.ts";
-import { recallCase, reflectCase, retainOutcome, loadRecentOutcomes, procedureTag } from "./hindsight.ts";
+import type { AdmissionCase, OutcomeInput, ReviewDecision, ReviewResponse } from "@shared/types";
+import { assessPacket } from "@shared/packet";
+import { payerById } from "@shared/payers";
+import { recallCase, reflectCase, retainOutcome, loadRecentOutcomes, procedureTag } from "./hindsight";
 
 export async function reviewAdmission(admission: AdmissionCase): Promise<ReviewResponse> {
   const payer = payerById(admission.payerId);

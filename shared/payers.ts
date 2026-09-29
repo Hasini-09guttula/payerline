@@ -1,4 +1,4 @@
-import type { Payer, PayerId } from "./types.ts";
+import type { Payer, PayerId } from "./types";
 
 export const PAYERS: Payer[] = [
   {

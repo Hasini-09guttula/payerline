@@ -1,4 +1,4 @@
-import type { PayerId } from "./types.ts";
+import type { PayerId } from "./types";
 
 export interface HistoryDocument {
   payerId: PayerId;

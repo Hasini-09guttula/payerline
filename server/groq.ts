@@ -1,5 +1,5 @@
-import type { ExtractedFields, PayerId } from "@shared/types.ts";
-import { groqConfig } from "./env.ts";
+import type { ExtractedFields, PayerId } from "@shared/types";
+import { groqConfig } from "./env";
 
 const TOOL = {
   type: "function",
