@@ -73,6 +73,70 @@ Groq can also parse a clinical note into structured admission fields (with tool-
 
 ---
 
+## System architecture
+
+The desk UI never talks to Hindsight directly. It posts patient + packet fields to Express; the server opens **one** insurer bank, recalls matching outcomes, reflects hold/send, and can retain a later insurer reply into that same bank.
+
+```mermaid
+flowchart LR
+  subgraph Desk["Cashless desk"]
+    UI["Next.js UI<br/>:5173"]
+  end
+
+  subgraph API["PayerLine API"]
+    Express["Express / TypeScript<br/>:8787"]
+    Review["POST /api/review<br/>recall + reflect"]
+    Extract["POST /api/extract<br/>optional note parse"]
+    Outcome["POST /api/outcome<br/>retain reply"]
+    Express --> Review
+    Express --> Extract
+    Express --> Outcome
+  end
+
+  subgraph Shared["shared/"]
+    Payers["payers · types"]
+    History["seeded history"]
+  end
+
+  subgraph Memory["Hindsight Cloud"]
+    M["payerline-meridian"]
+    N["payerline-northline"]
+    H["payerline-harbour"]
+    S["payerline-sable"]
+  end
+
+  Groq["Groq<br/>function calling"]
+
+  UI -->|"/api/* proxy"| Express
+  Review --> Memory
+  Outcome --> Memory
+  Extract --> Groq
+  Review -.-> Shared
+  History -.->|"npm run seed"| Memory
+```
+
+**Request path for a live check**
+
+```mermaid
+sequenceDiagram
+  actor Desk as Desk clerk
+  participant UI as Next.js UI
+  participant API as Express API
+  participant HS as Hindsight bank
+  participant LLM as Reflect / Groq
+
+  Desk->>UI: Enter patient, pick one insurer, set packet
+  UI->>API: POST /api/review
+  API->>HS: Recall similar outcomes (that bank only)
+  HS-->>API: Cited memories
+  API->>LLM: Reflect hold or send
+  LLM-->>API: Decision, fixes, do-not-keep
+  API-->>UI: Advise-only result
+  Note over Desk,UI: Person still sends or holds the file
+```
+
+---
+
 ## Setup
 
 ### 1. Keys
